@@ -112,39 +112,6 @@ def generate_izhikevich_neuronal_network(G, T=200000, tau=0.02, fe=400, fi=100):
     return v_vec, u_vec, spk_wave_raster, time_pad
 
 
-def time_averaging(date_vec):
-    date_vec.sort()
-    ave_idx_list = []
-    startDate, endDate = date_vec[0].split('-')[0], date_vec[-1].split('-')[0]
-    startDate, endDate = datetime.datetime.strptime(startDate, '%y%m%d'), datetime.datetime.strptime(endDate, '%y%m%d')
-
-    print(date_vec, len(date_vec))
-    print(startDate, endDate)
-    
-    currDate, startCurrDates = startDate, []
-    while currDate < endDate:
-        startCurrDates.append(currDate.strftime('%Y-%m-%d'))
-
-        idx_list = []
-        for i in range(len(date_vec)):
-            date = date_vec[i].split('-')[0]
-            date = datetime.datetime.strptime(date, '%y%m%d')
-            
-            if currDate > date: continue
-            elif date < currDate + datetime.timedelta(days=21):
-                idx_list.append(i)
-            else:
-                currDate += datetime.timedelta(days=11)
-                i -= 1 # point to the last date included
-                break
-
-        ave_idx_list.append(idx_list)
-        if i == len(date_vec)-1: break
-    
-    print(ave_idx_list)
-    return ave_idx_list, startCurrDates
-
-
 def setPltParams(): 
     # Set the default text font size
     plt.rc('font', size=5)
@@ -167,42 +134,9 @@ remove_zeros = True
 loadmetrics = False
 
 pick_well = '32'
-well_vec = [pick_well] #,'22','23','24','31','32','33','34']
+well_vec = [pick_well] 
 date_vec = [f.split('_')[0] for f in os.listdir('/Users/melhsieh/Documents/muotrilab/MEA analysis/code/mat_9mo_may24') if (f.endswith('.mat') and f.find('Well' + pick_well) != -1)]
 dlen, wlen = len(date_vec), len(well_vec)
-
-date_regroup_idx, ave_date_vec = time_averaging(date_vec)
-
-'''
-if loadmetrics:
-    with open('config_inout.yaml', "r") as fh:
-        metrics = yaml.load(fh, Loader=yaml.SafeLoader)
-else:
-    metrics = {'n_edge': None} # n_edge
-
-
-time_ave_metrics = copy.deepcopy(metrics)
-for m in metrics.keys():
-    metrics[m] = np.zeros((wlen, dlen))
-    time_ave_metrics[m] = np.empty((wlen, len(date_regroup_idx)))
-
-print(metrics.keys())
-'''
-
-def calculate_edge_probability(G):
-    # Get the number of nodes
-    num_nodes = len(G.nodes())
-
-    # Get the number of edges
-    num_edges = len(G.edges())
-
-    # Calculate the total possible number of edges
-    total_possible_edges = num_nodes * (num_nodes - 1) / 2
-
-    # Calculate edge probability
-    edge_probability = num_edges / total_possible_edges
-
-    return edge_probability
 
 
 # load all data
@@ -212,8 +146,6 @@ ifweight = False
 for well in range(wlen):
     nxgraphs = []
     for date in range(0, dlen):
-        # if ifweight: adjmat = scipy.io.loadmat(os.path.join('/Users/melhsieh/Documents/muotrilab/MEA analysis/code/mat_9mo', date_vec[date] + '_matfiles_WELL' + well_vec[well] + '.mat'))['EC_delay_adjmat']
-        # else: adjmat = scipy.io.loadmat(os.path.join('/Users/melhsieh/Documents/muotrilab/MEA analysis/code/mat_9mo', date_vec[date] + '_matfiles_WELL' + well_vec[well] + '.mat'))['adjmat_']
         if ifweight: adjmat = scipy.io.loadmat(os.path.join('/Users/melhsieh/Documents/muotrilab/MEA analysis/code/mat_9mo', date_vec[date] + '_matfiles_WELL' + well_vec[well] + '.mat'))['EC_delay_adjmat']
         else: adjmat = scipy.io.loadmat(os.path.join('/Users/melhsieh/Documents/muotrilab/MEA analysis/code/mat_9mo', date_vec[date] + '_matfiles_WELL' + well_vec[well] + '.mat'))['adjmat_']
         
@@ -265,9 +197,6 @@ for well in range(wlen):
             ## spike activity metrics
             firing_rates = compute_firing_rate(spk_wave_raster, time_pad)
             print(f"Firing rates: {np.mean(firing_rates)}")
-
-            # sttc_matrix = compute_sttc(spk_wave_raster, dt=0.1)
-            # print(f"Spike Time Tiling Coefficient (STTC) Matrix: {sttc_matrix}")
 
             isi_list = compute_isi(spk_wave_raster)
             cv_isi = compute_cv_isi(isi_list)

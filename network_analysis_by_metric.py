@@ -79,11 +79,6 @@ for pick_well in ['31', '32', '33', '34']:
 
 		date_regroup_idx, ave_date_vec = time_averaging(date_vec)
 
-		# metrics = {'max_clstr': None, 'mean_clstr': None, 'std_clstr': None, 'min_clstr': None, \
-		#                'num_clstr': None, 'perc_clstr': None, 'perc_non_zero_clstr': None, \
-		#                'num_small_clstr': None, 'perc_small_clstr': None, 'perc_non_zero_small_clstr': None, \
-		#                'num_zero_cluster': None, 'mean_non_zero_clstr': None, 'min_non_zero_clstr': None}
-
 		metrics = {'max_clstr': None, 'mean_clstr': None, 'min_clstr': None, \
 		           'std_clstr': None, 'num_small_clstr': None, 'num_clstr': None } #, \
 		           #'ent_clstr': None}
@@ -123,7 +118,6 @@ for pick_well in ['31', '32', '33', '34']:
 
 		        n_nodes = G.number_of_nodes()
 		        n_poss_edges = n_nodes*(n_nodes-1)
-		#         print(n_poss_edges)
 
 		        indegrees = np.array([G.in_degree(n)/(n_nodes-1) for n in G.nodes()]) #if G.in_degree(n) != 0 or not remove_zeros])
 		        outdegrees = np.array([G.out_degree(n)/(n_nodes-1) for n in G.nodes()]) # if G.in_degree(n) != 0 or not remove_zeros])
@@ -164,8 +158,6 @@ for pick_well in ['31', '32', '33', '34']:
 		        metrics['std_clstr'][well, date] = np.std(_metric)
 		        metrics['min_clstr'][well, date] = np.min(_metric)
 		        
-		#         metrics['ent_clstr'][well, date] = np.nansum(_metric*np.log2(1/_metric)/np.log2(len(_metric)))
-
 		        
 		        ten_perc_range = (np.max(_metric) - np.min(_metric))/10
 		        
@@ -176,48 +168,6 @@ for pick_well in ['31', '32', '33', '34']:
 		        metrics['num_clstr'][well, date] = _metric[m_idx].sum()/max(1, len(m_idx))
 		        metrics['num_small_clstr'][well, date] = len(m_idx)
 		    
-		    
-		    ''' Alternatively, though doesn't make sense, use the same mean and std of the metric in all dates
-		        all_metric.append(_metric)
-		    
-		    # number of neurons with mean + std values
-		    flat_all_metric = np.concatenate(all_metric).ravel()
-		    cutoff = np.mean(flat_all_metric) + np.std(flat_all_metric)
-		    print(np.mean(flat_all_metric), cutoff)
-		    
-		    for date in range(dlen):
-		        
-		        m_idx = np.where(all_metric[date] > cutoff)[0]
-		        metrics['num_clstr'][well, date] = all_metric[date][m_idx].sum()/max(1, len(m_idx))
-		        metrics['num_small_clstr'][well, date] = len(m_idx)
-		    '''
-
-		    
-		#         # number of neurons with >0.7 values 
-		#         metrics['num_clstr'][well, date] = len(np.where(_metric > (np.max(_metric) - 3*ten_perc_range))[0])
-		#         # percentage of neurons with >0.7 values 
-		#         metrics['perc_clstr'][well, date] = len(np.where(_metric > (np.max(_metric) - 3*ten_perc_range))[0])/len(_metric)*100
-		#         # number of neurons with <0.3 values
-		#         metrics['num_small_clstr'][well, date] = len(np.where(_metric < (3 * ten_perc_range))[0])
-		#         # percentage of neurons with <0.3 values 
-		#         metrics['perc_small_clstr'][well, date] = len(np.where(_metric < (3 * ten_perc_range))[0])/len(_metric)*100
-
-		#         metrics['num_zero_cluster'][well, date] = len(_metric[_metric == 0])
-		#         # mean and median after remove zeros
-		#         no_zero = _metric[_metric != 0]
-		#         if no_zero.size == 0:
-		#             metrics['mean_non_zero_clstr'][well, date] = 0
-		#             metrics['min_non_zero_clstr'][well, date] = 0
-		#             metrics['perc_non_zero_clstr'][well, date] = 0
-		#             metrics['perc_non_zero_small_clstr'][well, date] = 1
-
-		#         else:
-		#             metrics['mean_non_zero_clstr'][well, date] = np.mean(no_zero)
-		#             metrics['min_non_zero_clstr'][well, date] = np.min(no_zero)
-		#             metrics['perc_non_zero_clstr'][well, date] = len(np.where(no_zero > (np.max(_metric) - 2*ten_perc_range))[0])/len(no_zero)
-		#             metrics['perc_non_zero_small_clstr'][well, date] = len(np.where(no_zero < (2 * ten_perc_range))[0])/len(no_zero)
-		        
-
 		    fig.savefig('results_may24/FC/' + metric_name + '_hist-well' + well_vec[well] + '.png', dpi=400, format='PNG', bbox_inches='tight', pad_inches=0.1)
 
 
@@ -248,13 +198,6 @@ for pick_well in ['31', '32', '33', '34']:
 		plot_title_dict={'max_clstr': 'Max. of ' + metric_name, 'mean_clstr': 'Ave. of ' + metric_name, 'std_clstr': 'STD of ' + metric_name, 'min_clstr': 'Min. of ' + metric_name, \
 		               'num_clstr': 'Ave. of neurons with ' + metric_name+ ' > (Mean+STD)', 'num_small_clstr': '# of neurons with ' + metric_name+ ' > (Mean+STD)', \
 		                'ent_clstr': 'Entropy of ' + metric_name}
-		# 'num_clstr': 'Ave. of neurons with ' + metric_name+ ' > 0.7', 'num_small_clstr': '# of neurons with ' + metric_name+ ' > 0.7'}
-		#                  'num_clstr': '# of neurons with > 0.7\n' + metric_name, 'perc_clstr': '% of neurons with > 0.7\n' + metric_name, \
-		#                  'mean_non_zero_clstr': 'ave. after removing zeros', \
-		#                  'min_non_zero_clstr': 'min after removing zeros', \
-		#                  'num_zero_cluster': '# of neurons with zero ' + metric_name, \
-		#                  'num_small_clstr': '# of neurons with < 0.3\n' + metric_name, 'perc_small_clstr': '% of neurons with < 0.3\n' + metric_name, \
-		#                  'perc_non_zero_clstr': '% of > 0.8 \nafter removing zeros', 'perc_non_zero_small_clstr': '% of < 0.2 \nafter removing zeros'}
 
 		datetime_vec = [datetime.datetime.strptime(d,'%Y-%m-%d') for d in ave_date_vec]
 		startdate = datetime_vec[0]-datetime.timedelta(days=1)
@@ -284,12 +227,9 @@ for pick_well in ['31', '32', '33', '34']:
 					axes2[idx%3, math.floor(idx/3)].scatter(all_datetime_vec, metrics[m][w], color = 'lightblue', s=2)
 					axes2[idx%3, math.floor(idx/3)].plot(datetime_vec, time_ave_metrics[m][w], linewidth=0.5)
 					axes2[idx%3, math.floor(idx/3)].set_title(plot_title_dict[m]) # + '\n(averaged within 21 days)')
-		# 			axes2[idx%3, math.floor(idx/3)].set_xticks(ticks = np.arange(0,len(ave_date_vec)), labels=ave_date_vec, rotation = 90)
 					axes2[idx%3, math.floor(idx/3)].set_xticks(np.arange(0, datetime_vec[-1], 30), labels=np.arange(0, datetime_vec[-1], 30), rotation=90)
 					axes2[idx%3, math.floor(idx/3)].set_xlabel('Day')
 		            
-				#fig1.legend()
-				#fig2.legend()
 				fig1.tight_layout()
 				fig2.tight_layout()
 		        

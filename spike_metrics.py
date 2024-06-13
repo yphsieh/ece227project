@@ -8,24 +8,6 @@ def compute_firing_rate(spk_wave_raster, time_pad):
     firing_rates = [len(spk) / T for spk in spk_wave_raster]
     return np.array(firing_rates)
 
-def compute_sttc(spk_wave_raster, dt):
-    Ne = len(spk_wave_raster)
-    sttc_matrix = np.zeros((Ne, Ne))
-    for i in range(Ne):
-        for j in range(i+1, Ne):
-            spikes_i = spk_wave_raster[i].nonzero()[0]
-            spikes_j = spk_wave_raster[j].nonzero()[0]
-            if len(spikes_i) > 0 and len(spikes_j) > 0:
-                T_minus = sum([1 for t in spikes_i if any(np.abs(t - spikes_j) <= dt)])
-                T_plus = sum([1 for t in spikes_j if any(np.abs(t - spikes_i) <= dt)])
-                TA = T_minus / len(spikes_i)
-                TB = T_plus / len(spikes_j)
-                PA = len(spikes_i) / len(time_pad)
-                PB = len(spikes_j) / len(time_pad)
-                sttc_matrix[i, j] = (TA - PA) / (1 - PA * TB)
-                sttc_matrix[j, i] = sttc_matrix[i, j]
-    return sttc_matrix
-
 def compute_isi(spk_wave_raster):
     isi_list = []
     for i, spk in enumerate(spk_wave_raster):
@@ -94,14 +76,6 @@ def load_all_raster(spk_folder):
                 spk_train = time_pts[neu]
                 spk_wave_raster.append(spk_train)
 
-    #         for neu in range(len(spk_raster[0])):
-    #             axs[row, col].plot(spk_raster[0, neu], label = 'neu' + str(neu+1))
-    #         axs[row, col].legend(loc = 'right')
-    
-    # plt.rc('font', size=5)
-    # plt.tight_layout()
-    # plt.show()
-    # plt.savefig('all_spk_raster.png', format = 'PNG')
     return spk_wave_raster, time_pts
 
 if __name__ == "__main__":
@@ -125,8 +99,6 @@ if __name__ == "__main__":
         firing_rates = compute_firing_rate(spk_wave_raster, time_pad)
         print(f"Firing rates: {np.mean(firing_rates)}")
 
-        # sttc_matrix = compute_sttc(spk_wave_raster, dt=0.1)
-        # print(f"Spike Time Tiling Coefficient (STTC) Matrix: {sttc_matrix}")
 
         isi_list = compute_isi(spk_wave_raster)
         cv_isi = compute_cv_isi(isi_list)
